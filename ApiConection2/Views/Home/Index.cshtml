@@ -1,0 +1,74 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+<h2>Valores desde la API:</h2>
+
+<ul>
+    @foreach (var value in ViewBag.Values)
+    {
+        <li>@value</li>
+    }
+</ul>
+
+<h2>Agregar nuevo valor:</h2>
+
+<form method="post" action="/Home/AddValue">
+    <input type="text" name="newValue" placeholder="Nuevo valor" required />
+    <button type="submit">Agregar</button>
+</form>
+
+<h2>Agregar nuevo valor con AJAX:</h2>
+
+<form id="addValueForm">
+    <input type="text" id="newValueInput" placeholder="Nuevo valor" required />
+    <button type="submit">Agregar</button>
+</form>
+
+@section scripts {
+    <script>
+        $(function () {
+            $('#addValueForm').submit(function (e) {
+                e.preventDefault();
+
+                var newValue = $('#newValueInput').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("AddValue", "Home")',
+                    data: { newValue: newValue },
+                    success: function (response) {
+                        // Actualizar la lista de valores
+                        $('#valuesList').append('<li>' + newValue + '</li>');
+
+                        // Limpiar el campo de entrada
+                        $('#newValueInput').val('');
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert('Error al agregar el valor.');
+                    }
+                });
+            });
+        });
+
+        // Función para obtener la lista actualizada de valores
+        function getValues() {
+            $.get('@Url.Action("GetValues", "Home")', function (response) {
+                // Actualizar la lista de valores
+                var valuesList = $('#valuesList');
+                valuesList.empty();
+
+                $.each(response, function (index, value) {
+                    valuesList.append('<li>' + value + '</li>');
+                });
+
+                // Limpiar el campo de entrada
+                $('#newValueInput').val('');
+            });
+        }
+
+        // Llamar a getValues al cargar la página para obtener los valores iniciales
+        getValues();
+    </script>
+}
